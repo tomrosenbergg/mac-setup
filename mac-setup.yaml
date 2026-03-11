@@ -1,0 +1,39 @@
+- name: mac setup
+  hosts: localhost
+  connection: local
+  vars:
+    cli_pkgs: [neovim, git, ripgrep, fzf, zoxide, bat, gh, yt-dlp, python3, eza, nodejs, ffmpeg]
+    cask_pkgs: [google-chrome, visual-studio-code, iterm2, spotify, rectangle, bitwarden]
+
+  tasks:
+    - name: Ensure Homebrew is updated
+      community.general.homebrew:
+        update_homebrew: yes
+
+    - name: Install Homebrew packages
+      community.general.homebrew:
+        name: "{{ cli_pkgs }}"
+        state: present
+
+    - name: Install Homebrew casks
+      community.general.homebrew_cask:
+        name: "{{ cask_pkgs }}"
+        state: present
+
+    - name: Configure Git
+      community.general.git_config:
+        name: "{{ item.name }}"
+        scope: global
+        value: "{{ item.value }}"
+      loop:
+        - { name: 'user.email', value: 'tom@tomrosenberg.net' }
+        - { name: 'user.name', value: 'Tom Rosenberg' }
+
+    - name: Add Zsh Aliases to .zshrc
+      ansible.builtin.blockinfile:
+        path: ~/.zshrc
+        create: yes  # Create the file if it doesn't exist
+        block: |
+          alias cat="bat"
+          alias ls="eza --icons --git"
+          eval "$(zoxide init zsh)"
