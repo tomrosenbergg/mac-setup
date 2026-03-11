@@ -1,4 +1,5 @@
-- name: mac setup
+---
+- name: Setup Tom's Mac
   hosts: localhost
   connection: local
   vars:
@@ -6,6 +7,7 @@
     cask_pkgs: [google-chrome, visual-studio-code, iterm2, spotify, rectangle, bitwarden]
 
   tasks:
+    # --- Infrastructure Setup ---
     - name: Ensure Homebrew is updated
       community.general.homebrew:
         update_homebrew: yes
@@ -20,6 +22,7 @@
         name: "{{ cask_pkgs }}"
         state: present
 
+    # --- Git Configuration ---
     - name: Configure Git
       community.general.git_config:
         name: "{{ item.name }}"
@@ -29,11 +32,52 @@
         - { name: 'user.email', value: 'tom@tomrosenberg.net' }
         - { name: 'user.name', value: 'Tom Rosenberg' }
 
-    - name: Add Zsh Aliases to .zshrc
+    # --- Shell Configuration ---
+    - name: Add Zsh Aliases and Init to .zshrc
       ansible.builtin.blockinfile:
         path: ~/.zshrc
-        create: yes  # Create the file if it doesn't exist
+        create: yes
         block: |
           alias cat="bat"
           alias ls="eza --icons --git"
           eval "$(zoxide init zsh)"
+
+    # --- macOS UI Customization ---
+    - name: Set Desktop Background to Solid Black
+      ansible.builtin.shell: |
+        osascript -e 'tell application "Finder" to set desktop picture to POSIX file "/System/Library/Desktop Pictures/Solid Colors/Black.png"'
+      register: background_result
+      changed_when: background_result.rc == 0
+      ignore_errors: yes
+
+    - name: Hide the Dock by default
+      community.general.osx_defaults:
+        domain: com.apple.dock
+        key: autohide
+        type: bool
+        value: true
+      notify: Restart Dock
+
+    - name: Speed up Dock animation (Instant)
+      community.general.osx_defaults:
+        domain: com.apple.dock
+        key: autohide-delay
+        type: float
+        value: 0
+      notify: Restart Dock
+
+    - name: Show all filename extensions
+      community.general.osx_defaults:
+        domain: NSGlobalDomain
+        key: AppleShowAllExtensions
+        type: bool
+        value: true
+      notify: Restart Finder
+
+  # --- Handlers: Only run if the tasks above report a 'change' ---
+  handlers:
+    - name: Restart Dock
+      ansible.builtin.shell: killall Dock
+
+    - name: Restart Finder
+      ansible.builtin.shell: killall Finder
