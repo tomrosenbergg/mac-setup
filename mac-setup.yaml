@@ -3,7 +3,7 @@
   hosts: localhost
   connection: local
   vars:
-    cli_pkgs: [neovim, git, ripgrep, fzf, zoxide, bat, gh, yt-dlp, python3, eza, nodejs, ffmpeg]
+    cli_pkgs: [neovim, git, ripgrep, fzf, zoxide, bat, gh, yt-dlp, python3, eza, nodejs, ffmpeg, zsh-syntax-highlighting, zsh-autosuggestions]
     cask_pkgs: [google-chrome, visual-studio-code, iterm2, spotify, rectangle, bitwarden]
 
   tasks:
@@ -33,14 +33,12 @@
         - { name: 'user.name', value: 'Tom Rosenberg' }
 
     # --- Shell Configuration ---
-    - name: Add Zsh Aliases and Init to .zshrc
-      ansible.builtin.blockinfile:
-        path: ~/.zshrc
-        create: yes
-        block: |
-          alias cat="bat"
-          alias ls="eza --icons --git"
-          eval "$(zoxide init zsh)"
+    - name: Deploy custom .zshrc config with backup
+      ansible.builtin.copy:
+        src: .zshrc
+        dest: ~/.zshrc
+        mode: '0644'
+        backup: yes
 
     # --- macOS UI Customization ---
     - name: Set Desktop Background to Solid Black
