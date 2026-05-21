@@ -4,7 +4,7 @@
   connection: local
   vars:
     cli_pkgs: [neovim, git, ripgrep, fzf, zoxide, bat, gh, yt-dlp, python3, eza, nodejs, ffmpeg, zsh-syntax-highlighting, zsh-autosuggestions]
-    cask_pkgs: [google-chrome, visual-studio-code, iterm2, spotify, rectangle, bitwarden]
+    cask_pkgs: [google-chrome, visual-studio-code, iterm2, spotify, rectangle, bitwarden, google-drive]
 
   tasks:
     # --- Infrastructure Setup ---
